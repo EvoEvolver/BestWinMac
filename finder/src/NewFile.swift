@@ -13,7 +13,7 @@ enum NewFile {
 
     static func createMarkdown(in directory: URL) throws -> URL {
         for number in 1...10_000 {
-            let name = number == 1 ? "未命名.md" : "未命名 \(number).md"
+            let name = number == 1 ? "Untitled.md" : "Untitled \(number).md"
             let destination = directory.appendingPathComponent(name)
             let descriptor = open(destination.path, O_WRONLY | O_CREAT | O_EXCL, 0o644)
             if descriptor >= 0 {

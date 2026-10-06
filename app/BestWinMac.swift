@@ -108,29 +108,29 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         let settings = settingsModel.settings
         let trusted = AXIsProcessTrusted()
         if settings.showDesktop && trusted {
-            let title = isDesktopShown ? "恢复窗口" : "显示桌面"
+            let title = isDesktopShown ? "Restore Windows" : "Show Desktop"
             let action = NSMenuItem(title: title, action: #selector(toggleFromMenu), keyEquivalent: "")
             action.target = self
             menu.addItem(action)
         }
         if settings.finderCut && trusted {
-            menu.addItem(NSMenuItem(title: finderCut.isRunning ? "Finder ⌘X 剪切：已启用" : "Finder ⌘X 剪切：未启用",
+            menu.addItem(NSMenuItem(title: finderCut.isRunning ? "Finder Cut: Enabled" : "Finder Cut: Unavailable",
                                     action: nil, keyEquivalent: ""))
         }
         if settings.showDesktop && trusted && hotKey == nil {
-            menu.addItem(NSMenuItem(title: "⌘D 快捷键注册失败", action: nil, keyEquivalent: ""))
+            menu.addItem(NSMenuItem(title: "Command-D Shortcut Unavailable", action: nil, keyEquivalent: ""))
         }
         if (settings.showDesktop || settings.finderCut) && !trusted {
-            let permission = NSMenuItem(title: "开启辅助功能权限…", action: #selector(openAccessibilitySettings), keyEquivalent: "")
+            let permission = NSMenuItem(title: "Grant Accessibility Access…", action: #selector(openAccessibilitySettings), keyEquivalent: "")
             permission.target = self
             menu.addItem(permission)
         }
         if !menu.items.isEmpty { menu.addItem(.separator()) }
-        let settingsItem = NSMenuItem(title: "设置…", action: #selector(showSettings), keyEquivalent: "")
+        let settingsItem = NSMenuItem(title: "Settings…", action: #selector(showSettings), keyEquivalent: "")
         settingsItem.target = self
         menu.addItem(settingsItem)
         menu.addItem(.separator())
-        let quit = NSMenuItem(title: "退出 BestWinMac", action: #selector(quitApp), keyEquivalent: "")
+        let quit = NSMenuItem(title: "Quit BestWinMac", action: #selector(quitApp), keyEquivalent: "")
         quit.target = self
         menu.addItem(quit)
         statusItem.menu = menu

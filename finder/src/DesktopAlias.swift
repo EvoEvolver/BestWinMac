@@ -37,7 +37,7 @@ enum DesktopAlias {
         var baseName = source.lastPathComponent
         while baseName.utf8.count > 200 { baseName.removeLast() }
         for number in 1...10_000 {
-            let suffix = number == 1 ? " 快捷方式" : " 快捷方式 \(number)"
+            let suffix = number == 1 ? " Shortcut" : " Shortcut \(number)"
             let destination = directory.appendingPathComponent(baseName + suffix)
             do {
                 try manager.moveItem(at: prepared, to: destination)

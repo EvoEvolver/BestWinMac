@@ -22,7 +22,7 @@ final class SettingsModel: ObservableObject {
                 self.saveError = nil
                 self.onChange()
             } catch {
-                self.saveError = "无法保存设置：\(error.localizedDescription)"
+                self.saveError = "Could not save settings: \(error.localizedDescription)"
             }
         })
     }
@@ -40,30 +40,30 @@ struct SettingsPanel: View {
                     .frame(width: 42, height: 42)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("BestWinMac").font(.title2.bold())
-                    Text("功能设置").foregroundStyle(.secondary)
+                    Text("Features").foregroundStyle(.secondary)
                 }
             }
             .padding(.bottom, 24)
 
-            sectionTitle("快捷键")
-            featureRow("显示桌面", detail: "⌘D", symbol: "rectangle.3.group",
+            sectionTitle("Keyboard Shortcuts")
+            featureRow("Show Desktop", detail: "⌘D", symbol: "rectangle.3.group",
                        binding: model.binding(for: \.showDesktop))
-            featureRow("Finder 剪切", detail: "⌘X / ⌘V", symbol: "scissors",
+            featureRow("Cut Files in Finder", detail: "⌘X / ⌘V", symbol: "scissors",
                        binding: model.binding(for: \.finderCut))
 
-            sectionTitle("Finder 右键菜单")
+            sectionTitle("Finder Context Menu")
                 .padding(.top, 18)
-            featureRow("用 VSCode 打开", symbol: "chevron.left.forwardslash.chevron.right",
+            featureRow("Open with VS Code", symbol: "chevron.left.forwardslash.chevron.right",
                        binding: model.binding(for: \.openVSCode))
             featureRow("Copy Path", symbol: "doc.on.doc",
                        binding: model.binding(for: \.copyPath))
-            featureRow("发送到桌面快捷方式", symbol: "arrowshape.turn.up.right",
+            featureRow("Create Desktop Shortcut", symbol: "arrowshape.turn.up.right",
                        binding: model.binding(for: \.desktopAlias))
-            featureRow("新建 Markdown 文件", symbol: "doc.badge.plus",
+            featureRow("New Markdown File", symbol: "doc.badge.plus",
                        binding: model.binding(for: \.newMarkdown))
 
             if (model.settings.showDesktop || model.settings.finderCut) && !model.accessibilityGranted {
-                Button("开启辅助功能权限…", action: openAccessibilitySettings)
+                Button("Grant Accessibility Access…", action: openAccessibilitySettings)
                     .padding(.top, 16)
             }
             if let error = model.saveError {

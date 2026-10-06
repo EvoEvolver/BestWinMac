@@ -2,13 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- 必须沙盒化，否则 pkd 会静默拒绝注册扩展 -->
+	<!-- Finder Sync extensions must be sandboxed for pkd to register them. -->
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
 	<key>com.apple.security.files.user-selected.read-write</key>
 	<true/>
-	<!-- 空白处右键拿到的当前文件夹不算「用户选中」，需要临时例外才能把权限传给目标 App。
-	     仅适用于自用 / 非 Mac App Store 分发。 -->
+	<!-- A folder targeted by a background click is not a user-selected file.
+	     This exception supports those folders outside Mac App Store distribution. -->
 	<key>com.apple.security.temporary-exception.files.absolute-path.read-write</key>
 	<array>
 		<string>/</string>

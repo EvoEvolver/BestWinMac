@@ -1,12 +1,11 @@
 import Cocoa
 import FinderSync
 
-/// 一个右键菜单项：菜单标题 + 目标 App 路径 + 打开策略
+/// A context-menu item with its title, target app, and opening behavior.
 private struct TargetApp {
     let title: String
     let appPath: String
-    /// true 时，选中的若是文件就改用它所在的文件夹。
-    /// 终端必须这样，否则会把文件本身当命令执行。
+    /// When true, open a selected file's containing folder instead.
     let folderOnly: Bool
 }
 
@@ -16,14 +15,14 @@ class FinderExt: FIFinderSync {
     private static let currentFolderTag = 2
 
     private let apps: [TargetApp] = [
-        TargetApp(title: "用 VSCode 打开",
+        TargetApp(title: "Open with VS Code",
                   appPath: "/Applications/Visual Studio Code.app",
                   folderOnly: false),
     ]
 
     override init() {
         super.init()
-        // 监控整个磁盘，菜单才能在任意路径下出现
+        // Watch the whole disk so the menu appears in every Finder location.
         FIFinderSyncController.default().directoryURLs = [URL(fileURLWithPath: "/")]
     }
 
@@ -42,7 +41,7 @@ class FinderExt: FIFinderSync {
         if menuKind == .contextualMenuForItems || menuKind == .contextualMenuForContainer || menuKind == .contextualMenuForSidebar {
             let urls = targets()
             if settings.newMarkdown && creationTarget(for: menuKind) != nil {
-                let item = menu.addItem(withTitle: "新建 Markdown 文件",
+                let item = menu.addItem(withTitle: "New Markdown File",
                                         action: #selector(createMarkdown(_:)),
                                         keyEquivalent: "")
                 item.target = self
@@ -59,7 +58,7 @@ class FinderExt: FIFinderSync {
                 }
 
                 if settings.desktopAlias {
-                    let item = menu.addItem(withTitle: "发送到桌面快捷方式",
+                    let item = menu.addItem(withTitle: "Create Desktop Shortcut",
                                             action: #selector(sendToDesktop(_:)),
                                             keyEquivalent: "")
                     item.target = self
@@ -80,7 +79,7 @@ class FinderExt: FIFinderSync {
             target = controller.targetedURL()
         }
         guard let target else {
-            showError("无法新建 Markdown 文件", details: "找不到右键菜单对应的目录。")
+            showError("Could Not Create Markdown File", details: "The Finder location is no longer available.")
             return
         }
         do {
@@ -88,7 +87,7 @@ class FinderExt: FIFinderSync {
             let file = try NewFile.createMarkdown(in: directory)
             NSWorkspace.shared.activateFileViewerSelecting([file])
         } catch {
-            showError("无法新建 Markdown 文件", details: error.localizedDescription)
+            showError("Could Not Create Markdown File", details: error.localizedDescription)
         }
     }
 
@@ -128,7 +127,7 @@ class FinderExt: FIFinderSync {
                 do {
                     try DesktopAlias.create(for: url, in: desktop)
                 } catch {
-                    failures.append("\(url.lastPathComponent)：\(error.localizedDescription)")
+                    failures.append("\(url.lastPathComponent): \(error.localizedDescription)")
                 }
             }
             if !failures.isEmpty {
@@ -140,7 +139,7 @@ class FinderExt: FIFinderSync {
     }
 
     private func showAliasError(_ message: String) {
-        showError("无法创建桌面快捷方式", details: message)
+        showError("Could Not Create Desktop Shortcut", details: message)
     }
 
     private func showError(_ title: String, details: String) {
@@ -149,7 +148,7 @@ class FinderExt: FIFinderSync {
         alert.messageText = title
         alert.informativeText = details
         alert.alertStyle = .warning
-        alert.addButton(withTitle: "好")
+        alert.addButton(withTitle: "OK")
         alert.runModal()
     }
 
@@ -164,11 +163,11 @@ class FinderExt: FIFinderSync {
                 let target = try DesktopAlias.targetForOpening(selected)
                 urls.append(app.folderOnly ? enclosingDirectory(of: target) : target)
             } catch {
-                failures.append("\(selected.lastPathComponent)：\(error.localizedDescription)")
+                failures.append("\(selected.lastPathComponent): \(error.localizedDescription)")
             }
         }
         if !failures.isEmpty {
-            showError("无法打开替身", details: failures.joined(separator: "\n"))
+            showError("Could Not Open Alias", details: failures.joined(separator: "\n"))
         }
         guard !urls.isEmpty else { return }
 
@@ -177,7 +176,7 @@ class FinderExt: FIFinderSync {
                                 configuration: NSWorkspace.OpenConfiguration())
     }
 
-    /// 选中项优先；在窗口空白处右键时没有选中项，退回当前所在文件夹
+    /// Prefer selected items; use the current folder when nothing is selected.
     private func targets() -> [URL] {
         let controller = FIFinderSyncController.default()
         if let selected = controller.selectedItemURLs(), !selected.isEmpty {
@@ -195,7 +194,7 @@ class FinderExt: FIFinderSync {
         return isDirectory.boolValue ? url : url.deletingLastPathComponent()
     }
 
-    /// 直接取目标 App 自己的图标，省掉打包图片资源，换 App 也不用换图
+    /// Use the target app's own icon so no separate icon asset is needed.
     private func icon(for appPath: String) -> NSImage {
         let image = NSWorkspace.shared.icon(forFile: appPath)
         image.size = NSSize(width: 16, height: 16)

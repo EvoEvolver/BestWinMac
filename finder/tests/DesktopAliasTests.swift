@@ -10,7 +10,7 @@ enum DesktopAliasTests {
         let destination = root.appendingPathComponent("Desktop")
         try manager.createDirectory(at: destination, withIntermediateDirectories: false)
 
-        let folder = root.appendingPathComponent("文件夹 ' \" $() 空格")
+        let folder = root.appendingPathComponent("folder ' \" $() spaces")
         try manager.createDirectory(at: folder, withIntermediateDirectories: false)
         let file = folder.appendingPathComponent("hello.txt")
         let original = Data("original file contents".utf8)
@@ -32,18 +32,18 @@ enum DesktopAliasTests {
 
         // Repeated requests preserve the first alias and pick a distinct name.
         let repeated = try DesktopAlias.create(for: file, in: destination)
-        precondition(repeated.lastPathComponent == "hello.txt 快捷方式 2")
-        let nextName = destination.appendingPathComponent("hello.txt 快捷方式 3")
+        precondition(repeated.lastPathComponent == "hello.txt Shortcut 2")
+        let nextName = destination.appendingPathComponent("hello.txt Shortcut 3")
         try original.write(to: nextName)
         let next = try DesktopAlias.create(for: file, in: destination)
-        precondition(next.lastPathComponent == "hello.txt 快捷方式 4")
+        precondition(next.lastPathComponent == "hello.txt Shortcut 4")
         precondition(tryValue { try Data(contentsOf: nextName) } == original)
 
         // A dangling symlink also occupies a name and must never be replaced.
-        let dangling = destination.appendingPathComponent("hello.txt 快捷方式 5")
+        let dangling = destination.appendingPathComponent("hello.txt Shortcut 5")
         try manager.createSymbolicLink(at: dangling, withDestinationURL: root.appendingPathComponent("missing"))
         let afterLink = try DesktopAlias.create(for: file, in: destination)
-        precondition(afterLink.lastPathComponent == "hello.txt 快捷方式 6")
+        precondition(afterLink.lastPathComponent == "hello.txt Shortcut 6")
         precondition(tryValue { try manager.destinationOfSymbolicLink(atPath: dangling.path) }.hasSuffix("missing"))
 
         precondition(tryValue { try Data(contentsOf: file) } == original)
