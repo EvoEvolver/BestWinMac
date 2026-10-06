@@ -5,6 +5,7 @@
     <key>CFBundleIdentifier</key><string>local.zijian.BestWinMac</string>
     <key>CFBundleName</key><string>BestWinMac</string>
     <key>CFBundleExecutable</key><string>BestWinMac</string>
+    <key>CFBundleIconFile</key><string>BestWinMac</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>1.0</string>
     <key>CFBundleVersion</key><string>1</string>

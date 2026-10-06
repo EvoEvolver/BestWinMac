@@ -17,7 +17,14 @@ final class DesktopController: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "rectangle.3.group", accessibilityDescription: "BestWinMac")
+            if let path = Bundle.main.path(forResource: "BestWinMacMenuBar", ofType: "png"),
+               let image = NSImage(contentsOfFile: path) {
+                image.size = NSSize(width: 18, height: 18)
+                image.isTemplate = true
+                button.image = image
+            } else {
+                button.image = NSImage(systemSymbolName: "rectangle.3.group", accessibilityDescription: "BestWinMac")
+            }
             button.toolTip = "BestWinMac: ⌘D 显示桌面，Finder ⌘X 剪切"
         }
         refreshMenu()

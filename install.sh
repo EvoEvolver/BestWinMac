@@ -7,7 +7,7 @@ extension="$bundle/Contents/PlugIns/FinderExt.appex"
 target="$(uname -m)-apple-macos11"
 launch_agent="$HOME/Library/LaunchAgents/local.zijian.BestWinMac.plist"
 
-mkdir -p "$bundle/Contents/MacOS" "$extension/Contents/MacOS"
+mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources" "$extension/Contents/MacOS"
 
 swiftc -O "$root/app/BestWinMac.swift" "$root/app/FinderCutInterceptor.swift" \
     "$root/app/CutPasteboardState.swift" -o "$bundle/Contents/MacOS/BestWinMac" \
@@ -18,6 +18,8 @@ swiftc "$root/finder/src/FinderExt.swift" "$root/finder/src/DesktopAlias.swift" 
 
 cp "$root/app/Info.plist" "$bundle/Contents/Info.plist"
 cp "$root/finder/src/Ext-Info.plist" "$extension/Contents/Info.plist"
+cp "$root/assets/BestWinMac.icns" "$bundle/Contents/Resources/BestWinMac.icns"
+cp "$root/assets/BestWinMacMenuBar.png" "$bundle/Contents/Resources/BestWinMacMenuBar.png"
 plutil -lint "$bundle/Contents/Info.plist" "$extension/Contents/Info.plist"
 
 codesign --force --sign - --entitlements "$root/finder/src/FinderExt.entitlements" "$extension"

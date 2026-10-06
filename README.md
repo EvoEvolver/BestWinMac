@@ -25,6 +25,7 @@
 - `finder/`: Finder Sync 扩展和桌面替身测试。
 - `app/`: 菜单栏 App、全局显示桌面与 Finder 剪切。
 - `install.sh`: 本机编译、签名、安装与注册。
+- `tools/render_icon.swift`: App 与菜单栏图标的可重建绘制源码；运行 `./tools/build_icon.sh` 更新 `assets/`。
 
 ## 本地测试
 
