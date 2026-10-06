@@ -56,17 +56,17 @@ class FinderExt: FIFinderSync {
     @objc private func copyPath(_ sender: NSMenuItem) {
         let urls = targets()
         guard !urls.isEmpty else {
-            NSLog("RightOpen: Copy Path had no Finder target")
+            NSLog("BestWinMac: Copy Path had no Finder target")
             return
         }
         let paths = urls.map(\.path).joined(separator: "\n")
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         if !pasteboard.setString(paths, forType: .string) {
-            NSLog("RightOpen: Copy Path failed to write %ld paths to pasteboard", urls.count)
+            NSLog("BestWinMac: Copy Path failed to write %ld paths to pasteboard", urls.count)
             NSSound.beep()
         } else {
-            NSLog("RightOpen: Copy Path copied %ld paths", urls.count)
+            NSLog("BestWinMac: Copy Path copied %ld paths", urls.count)
         }
     }
 

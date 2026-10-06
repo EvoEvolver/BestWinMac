@@ -7,11 +7,11 @@
 	<key>CFBundleExecutable</key>
 	<string>FinderExt</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.gs.RightOpen.FinderExt</string>
+	<string>local.zijian.BestWinMac.FinderExt</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>RightOpen</string>
+	<string>BestWinMac Finder Extension</string>
 	<key>CFBundlePackageType</key>
 	<string>XPC!</string>
 	<key>CFBundleShortVersionString</key>
@@ -25,7 +25,7 @@
 		<key>NSExtensionAttributes</key>
 		<dict>
 			<key>NSExtensionFileProviderDocumentGroup</key>
-			<string>com.gs.RightOpen</string>
+			<string>local.zijian.BestWinMac</string>
 		</dict>
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.FinderSync</string>

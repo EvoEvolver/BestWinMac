@@ -1,6 +1,6 @@
 # BestWinMac
 
-本机 macOS 的 Windows 风格小功能，集中维护在这个仓库。安装时生成两个本地 App，不需要完整 Xcode，只需 Command Line Tools。
+本机 macOS 的 Windows 风格小功能，集中在一个 App 和这个仓库。构建只需 Command Line Tools，不需要完整 Xcode。
 
 | 功能 | 使用方式 | 实现 |
 | --- | --- | --- |
@@ -16,14 +16,14 @@
 ./install.sh
 ```
 
-安装脚本编译并安装 `/Applications/RightOpen.app` 和 `/Applications/WinDesktop.app`，注册 Finder 扩展和 `WinDesktop` 登录启动项。两个 Bundle ID 沿用旧版，方便现有系统设置识别。首次使用窗口和键盘功能时，可能需要在“系统设置 → 隐私与安全性 → 辅助功能”允许 WinDesktop。菜单栏有一个矩形窗口图标，能查看状态或退出。
+安装脚本编译并安装 `/Applications/BestWinMac.app`，注册内含的 Finder 扩展与登录启动项。首次使用窗口和键盘功能时，需要在“系统设置 → 隐私与安全性 → 辅助功能”允许 BestWinMac。菜单栏有一个矩形窗口图标，能查看状态或退出。
 
 原 cmdX 项目采用 MIT 许可证。Finder 剪切的快捷键转换思路参考了 [YONN2222/cmdX](https://github.com/YONN2222/cmdX)，许可证见 `third_party/cmdX-LICENSE`。RightOpen 来源及其 MIT 许可证见 `finder/LICENSE`。
 
 ## 目录
 
-- `finder/`: RightOpen Finder Sync 扩展和桌面替身测试。
-- `utility/`: WinDesktop 菜单栏 App、全局显示桌面与 Finder 剪切。
+- `finder/`: Finder Sync 扩展和桌面替身测试。
+- `app/`: 菜单栏 App、全局显示桌面与 Finder 剪切。
 - `install.sh`: 本机编译、签名、安装与注册。
 
 ## 本地测试
@@ -32,6 +32,6 @@
 mkdir -p build
 swiftc finder/src/DesktopAlias.swift finder/tests/DesktopAliasTests.swift -o build/DesktopAliasTests
 ./build/DesktopAliasTests --desktop
-swiftc utility/CutPasteboardState.swift utility/tests/CutPasteboardStateTests.swift -o build/CutPasteboardStateTests
+swiftc app/CutPasteboardState.swift app/tests/CutPasteboardStateTests.swift -o build/CutPasteboardStateTests
 ./build/CutPasteboardStateTests
 ```

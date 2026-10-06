@@ -17,7 +17,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "rectangle.3.group", accessibilityDescription: "WinDesktop")
+            button.image = NSImage(systemSymbolName: "rectangle.3.group", accessibilityDescription: "BestWinMac")
             button.toolTip = "BestWinMac: ⌘D 显示桌面，Finder ⌘X 剪切"
         }
         refreshMenu()
@@ -48,7 +48,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         }
         let installStatus = InstallEventHandler(GetApplicationEventTarget(), handler, 1, &spec, context, &eventHandler)
         guard installStatus == noErr else {
-            NSLog("WinDesktop: InstallEventHandler failed: %d", installStatus)
+            NSLog("BestWinMac: InstallEventHandler failed: %d", installStatus)
             return
         }
 
@@ -56,7 +56,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         let registerStatus = RegisterEventHotKey(2, UInt32(cmdKey), identifier,
                                                 GetApplicationEventTarget(), OptionBits(kEventHotKeyExclusive), &hotKey)
         if registerStatus != noErr {
-            NSLog("WinDesktop: RegisterEventHotKey failed: %d", registerStatus)
+            NSLog("BestWinMac: RegisterEventHotKey failed: %d", registerStatus)
             if let eventHandler { RemoveEventHandler(eventHandler) }
             eventHandler = nil
         } else {
@@ -83,7 +83,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
             menu.addItem(permission)
         }
         menu.addItem(.separator())
-        let quit = NSMenuItem(title: "退出 WinDesktop", action: #selector(quitApp), keyEquivalent: "")
+        let quit = NSMenuItem(title: "退出 BestWinMac", action: #selector(quitApp), keyEquivalent: "")
         quit.target = self
         menu.addItem(quit)
         statusItem.menu = menu
@@ -159,7 +159,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
 }
 
 @main
-enum WinDesktopMain {
+enum BestWinMacMain {
     static func main() {
         if CommandLine.arguments.contains("--diagnose") {
             print("accessibility=\(AXIsProcessTrusted())")

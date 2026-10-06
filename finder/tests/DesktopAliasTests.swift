@@ -4,7 +4,7 @@ import Foundation
 enum DesktopAliasTests {
     static func main() throws {
         let manager = FileManager.default
-        let root = manager.temporaryDirectory.appendingPathComponent("RightOpen-tests-\(UUID().uuidString)")
+        let root = manager.temporaryDirectory.appendingPathComponent("BestWinMac-tests-\(UUID().uuidString)")
         try manager.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? manager.removeItem(at: root) }
         let destination = root.appendingPathComponent("Desktop")
@@ -47,7 +47,7 @@ enum DesktopAliasTests {
         precondition(tryValue { try manager.destinationOfSymbolicLink(atPath: dangling.path) }.hasSuffix("missing"))
 
         precondition(tryValue { try Data(contentsOf: file) } == original)
-        precondition(tryValue { try manager.contentsOfDirectory(atPath: destination.path) }.allSatisfy { !$0.hasPrefix(".rightopen-alias-") })
+        precondition(tryValue { try manager.contentsOfDirectory(atPath: destination.path) }.allSatisfy { !$0.hasPrefix(".bestwinmac-alias-") })
         print("PASS: file/folder aliases, special characters, duplicate names, existing files, dangling symlinks, source preservation and cleanup")
         print("Desktop destination: \(try DesktopAlias.desktopURL().path)")
         if CommandLine.arguments.contains("--desktop") {

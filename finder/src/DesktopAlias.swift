@@ -28,7 +28,7 @@ enum DesktopAlias {
         )
 
         // Finish the alias before publishing it; never overwrite an existing item.
-        let staging = directory.appendingPathComponent(".rightopen-alias-\(UUID().uuidString)")
+        let staging = directory.appendingPathComponent(".bestwinmac-alias-\(UUID().uuidString)")
         try manager.createDirectory(at: staging, withIntermediateDirectories: false)
         defer { try? manager.removeItem(at: staging) }
         let prepared = staging.appendingPathComponent("alias")
