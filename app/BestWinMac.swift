@@ -1,6 +1,7 @@
 import AppKit
 import ApplicationServices
 import Carbon
+import SwiftUI
 
 private struct SavedWindow {
     let element: AXUIElement
@@ -9,6 +10,10 @@ private struct SavedWindow {
 final class DesktopController: NSObject, NSApplicationDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let finderCut = FinderCutInterceptor()
+    private lazy var settingsModel = SettingsModel(settings: FeatureSettingsStore.load()) { [weak self] in
+        self?.syncFeatures()
+    }
+    private var settingsWindow: NSWindow?
     private var savedWindows: [SavedWindow] = []
     private var previousFrontmost: NSRunningApplication?
     private var isDesktopShown = false
@@ -25,24 +30,44 @@ final class DesktopController: NSObject, NSApplicationDelegate {
             } else {
                 button.image = NSImage(systemSymbolName: "rectangle.3.group", accessibilityDescription: "BestWinMac")
             }
-            button.toolTip = "BestWinMac: ⌘D 显示桌面，Finder ⌘X 剪切"
+            button.toolTip = "BestWinMac"
         }
-        refreshMenu()
-
-        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-        _ = AXIsProcessTrustedWithOptions(options)
-        updateHotKey()
+        if settingsModel.settings.showDesktop || settingsModel.settings.finderCut {
+            let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+            _ = AXIsProcessTrustedWithOptions(options)
+        }
+        syncFeatures()
         Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
-            self?.updateHotKey()
+            self?.syncFeatures()
         }
     }
 
-    private func updateHotKey() {
-        guard AXIsProcessTrusted() else {
-            refreshMenu()
-            return
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showSettings()
+        return true
+    }
+
+    private func syncFeatures() {
+        let settings = settingsModel.settings
+        let trusted = AXIsProcessTrusted()
+        if settingsModel.accessibilityGranted != trusted {
+            settingsModel.accessibilityGranted = trusted
         }
-        finderCut.start()
+        if settings.finderCut && trusted {
+            finderCut.start()
+        } else {
+            finderCut.stop()
+        }
+        if settings.showDesktop && trusted {
+            registerHotKey()
+        } else {
+            unregisterHotKey()
+            if !settings.showDesktop && isDesktopShown { restoreWindows() }
+        }
+        refreshMenu()
+    }
+
+    private func registerHotKey() {
         guard hotKey == nil else { return }
 
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
@@ -69,26 +94,41 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         } else {
             NSLog("BestWinMac: Command-D hotkey registered")
         }
-        refreshMenu()
+    }
+
+    private func unregisterHotKey() {
+        if let hotKey { UnregisterEventHotKey(hotKey) }
+        hotKey = nil
+        if let eventHandler { RemoveEventHandler(eventHandler) }
+        eventHandler = nil
     }
 
     private func refreshMenu() {
         let menu = NSMenu()
-        if AXIsProcessTrusted() {
+        let settings = settingsModel.settings
+        let trusted = AXIsProcessTrusted()
+        if settings.showDesktop && trusted {
             let title = isDesktopShown ? "恢复窗口" : "显示桌面"
             let action = NSMenuItem(title: title, action: #selector(toggleFromMenu), keyEquivalent: "")
             action.target = self
             menu.addItem(action)
+        }
+        if settings.finderCut && trusted {
             menu.addItem(NSMenuItem(title: finderCut.isRunning ? "Finder ⌘X 剪切：已启用" : "Finder ⌘X 剪切：未启用",
                                     action: nil, keyEquivalent: ""))
-            if hotKey == nil {
-                menu.addItem(NSMenuItem(title: "⌘D 快捷键注册失败", action: nil, keyEquivalent: ""))
-            }
-        } else {
+        }
+        if settings.showDesktop && trusted && hotKey == nil {
+            menu.addItem(NSMenuItem(title: "⌘D 快捷键注册失败", action: nil, keyEquivalent: ""))
+        }
+        if (settings.showDesktop || settings.finderCut) && !trusted {
             let permission = NSMenuItem(title: "开启辅助功能权限…", action: #selector(openAccessibilitySettings), keyEquivalent: "")
             permission.target = self
             menu.addItem(permission)
         }
+        if !menu.items.isEmpty { menu.addItem(.separator()) }
+        let settingsItem = NSMenuItem(title: "设置…", action: #selector(showSettings), keyEquivalent: "")
+        settingsItem.target = self
+        menu.addItem(settingsItem)
         menu.addItem(.separator())
         let quit = NSMenuItem(title: "退出 BestWinMac", action: #selector(quitApp), keyEquivalent: "")
         quit.target = self
@@ -101,7 +141,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
     }
 
     private func toggleDesktop() {
-        guard AXIsProcessTrusted() else { return }
+        guard settingsModel.settings.showDesktop && AXIsProcessTrusted() else { return }
         if isDesktopShown {
             restoreWindows()
         } else {
@@ -155,6 +195,22 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         NSWorkspace.shared.open(url)
     }
 
+    @objc private func showSettings() {
+        if settingsWindow == nil {
+            let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsPanel(
+                model: settingsModel,
+                openAccessibilitySettings: { [weak self] in self?.openAccessibilitySettings() }
+            )))
+            window.title = "BestWinMac"
+            window.styleMask = [.titled, .closable, .miniaturizable]
+            window.center()
+            window.isReleasedWhenClosed = false
+            settingsWindow = window
+        }
+        settingsWindow?.makeKeyAndOrderFront(nil)
+        NSApplication.shared.activate(ignoringOtherApps: true)
+    }
+
     @objc private func quitApp() {
         if isDesktopShown { restoreWindows() }
         NSApplication.shared.terminate(nil)
@@ -162,6 +218,8 @@ final class DesktopController: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         if isDesktopShown { restoreWindows() }
+        unregisterHotKey()
+        finderCut.stop()
     }
 }
 

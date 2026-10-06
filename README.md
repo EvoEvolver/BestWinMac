@@ -16,7 +16,7 @@
 ./install.sh
 ```
 
-安装脚本编译并安装 `/Applications/BestWinMac.app`，注册内含的 Finder 扩展与登录启动项。首次使用窗口和键盘功能时，需要在“系统设置 → 隐私与安全性 → 辅助功能”允许 BestWinMac。菜单栏有一个矩形窗口图标，能查看状态或退出。
+安装脚本编译并安装 `/Applications/BestWinMac.app`，注册内含的 Finder 扩展与登录启动项。首次使用窗口和键盘功能时，需要在“系统设置 → 隐私与安全性 → 辅助功能”允许 BestWinMac。点击菜单栏中的 BestWinMac 图标，再选“设置…”可分别开关上述五项功能；设置立即生效并持久保存。
 
 原 cmdX 项目采用 MIT 许可证。Finder 剪切的快捷键转换思路参考了 [YONN2222/cmdX](https://github.com/YONN2222/cmdX)，许可证见 `third_party/cmdX-LICENSE`。RightOpen 来源及其 MIT 许可证见 `finder/LICENSE`。
 
@@ -24,6 +24,7 @@
 
 - `finder/`: Finder Sync 扩展和桌面替身测试。
 - `app/`: 菜单栏 App、全局显示桌面与 Finder 剪切。
+- `shared/`: App 和 Finder 扩展共用的功能设置。
 - `install.sh`: 本机编译、签名、安装与注册。
 - `tools/render_icon.swift`: App 与菜单栏图标的可重建绘制源码；运行 `./tools/build_icon.sh` 更新 `assets/`。
 
@@ -35,4 +36,6 @@ swiftc finder/src/DesktopAlias.swift finder/tests/DesktopAliasTests.swift -o bui
 ./build/DesktopAliasTests --desktop
 swiftc app/CutPasteboardState.swift app/tests/CutPasteboardStateTests.swift -o build/CutPasteboardStateTests
 ./build/CutPasteboardStateTests
+swiftc shared/FeatureSettings.swift shared/tests/FeatureSettingsTests.swift -o build/FeatureSettingsTests
+./build/FeatureSettingsTests
 ```

@@ -37,6 +37,18 @@ final class FinderCutInterceptor {
         NSLog("BestWinMac: Finder cut event tap started")
     }
 
+    func stop() {
+        if let runLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
+            self.runLoopSource = nil
+        }
+        if let eventTap {
+            CFMachPortInvalidate(eventTap)
+            self.eventTap = nil
+        }
+        cutState.cancel()
+    }
+
     private func handle(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             if let eventTap { CGEvent.tapEnable(tap: eventTap, enable: true) }

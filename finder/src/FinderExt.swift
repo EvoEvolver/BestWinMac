@@ -27,27 +27,34 @@ class FinderExt: FIFinderSync {
 
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
         let menu = NSMenu(title: "")
-        for (index, app) in apps.enumerated() where FileManager.default.fileExists(atPath: app.appPath) {
-            let item = menu.addItem(withTitle: app.title,
-                                    action: #selector(open(_:)),
-                                    keyEquivalent: "")
-            item.tag = index
-            item.image = icon(for: app.appPath)
+        let settings = FeatureSettingsStore.load()
+        if settings.openVSCode {
+            for (index, app) in apps.enumerated() where FileManager.default.fileExists(atPath: app.appPath) {
+                let item = menu.addItem(withTitle: app.title,
+                                        action: #selector(open(_:)),
+                                        keyEquivalent: "")
+                item.tag = index
+                item.image = icon(for: app.appPath)
+            }
         }
         if menuKind == .contextualMenuForItems || menuKind == .contextualMenuForContainer || menuKind == .contextualMenuForSidebar {
             let urls = targets()
             if !urls.isEmpty {
-                let copyItem = menu.addItem(withTitle: "Copy Path",
-                                            action: #selector(copyPath(_:)),
-                                            keyEquivalent: "")
-                copyItem.target = self
-                copyItem.image = NSImage(systemSymbolName: "doc.on.doc", accessibilityDescription: nil)
+                if settings.copyPath {
+                    let copyItem = menu.addItem(withTitle: "Copy Path",
+                                                action: #selector(copyPath(_:)),
+                                                keyEquivalent: "")
+                    copyItem.target = self
+                    copyItem.image = NSImage(systemSymbolName: "doc.on.doc", accessibilityDescription: nil)
+                }
 
-                let item = menu.addItem(withTitle: "发送到桌面快捷方式",
-                                        action: #selector(sendToDesktop(_:)),
-                                        keyEquivalent: "")
-                item.target = self
-                item.image = NSImage(systemSymbolName: "arrowshape.turn.up.right", accessibilityDescription: nil)
+                if settings.desktopAlias {
+                    let item = menu.addItem(withTitle: "发送到桌面快捷方式",
+                                            action: #selector(sendToDesktop(_:)),
+                                            keyEquivalent: "")
+                    item.target = self
+                    item.image = NSImage(systemSymbolName: "arrowshape.turn.up.right", accessibilityDescription: nil)
+                }
             }
         }
         return menu
