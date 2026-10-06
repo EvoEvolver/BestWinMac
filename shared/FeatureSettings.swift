@@ -7,6 +7,23 @@ struct FeatureSettings: Codable, Equatable {
     var openVSCode = true
     var copyPath = true
     var desktopAlias = true
+    var newMarkdown = true
+
+    init() {}
+
+    private enum CodingKeys: String, CodingKey {
+        case showDesktop, finderCut, openVSCode, copyPath, desktopAlias, newMarkdown
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        showDesktop = try values.decodeIfPresent(Bool.self, forKey: .showDesktop) ?? true
+        finderCut = try values.decodeIfPresent(Bool.self, forKey: .finderCut) ?? true
+        openVSCode = try values.decodeIfPresent(Bool.self, forKey: .openVSCode) ?? true
+        copyPath = try values.decodeIfPresent(Bool.self, forKey: .copyPath) ?? true
+        desktopAlias = try values.decodeIfPresent(Bool.self, forKey: .desktopAlias) ?? true
+        newMarkdown = try values.decodeIfPresent(Bool.self, forKey: .newMarkdown) ?? true
+    }
 }
 
 enum FeatureSettingsStore {

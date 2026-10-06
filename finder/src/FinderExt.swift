@@ -12,6 +12,8 @@ private struct TargetApp {
 
 @objc(FinderExt)
 class FinderExt: FIFinderSync {
+    private static let selectedItemTag = 1
+    private static let currentFolderTag = 2
 
     private let apps: [TargetApp] = [
         TargetApp(title: "用 VSCode 打开",
@@ -39,6 +41,14 @@ class FinderExt: FIFinderSync {
         }
         if menuKind == .contextualMenuForItems || menuKind == .contextualMenuForContainer || menuKind == .contextualMenuForSidebar {
             let urls = targets()
+            if settings.newMarkdown && creationTarget(for: menuKind) != nil {
+                let item = menu.addItem(withTitle: "新建 Markdown 文件",
+                                        action: #selector(createMarkdown(_:)),
+                                        keyEquivalent: "")
+                item.target = self
+                item.tag = menuKind == .contextualMenuForItems ? Self.selectedItemTag : Self.currentFolderTag
+                item.image = NSImage(systemSymbolName: "doc.badge.plus", accessibilityDescription: nil)
+            }
             if !urls.isEmpty {
                 if settings.copyPath {
                     let copyItem = menu.addItem(withTitle: "Copy Path",
@@ -58,6 +68,37 @@ class FinderExt: FIFinderSync {
             }
         }
         return menu
+    }
+
+    @objc private func createMarkdown(_ sender: NSMenuItem) {
+        let controller = FIFinderSyncController.default()
+        let target: URL?
+        if sender.tag == Self.selectedItemTag {
+            let selected = controller.selectedItemURLs() ?? []
+            target = selected.count == 1 ? selected.first : nil
+        } else {
+            target = controller.targetedURL()
+        }
+        guard let target else {
+            showError("无法新建 Markdown 文件", details: "找不到右键菜单对应的目录。")
+            return
+        }
+        do {
+            let directory = try NewFile.directory(for: target)
+            let file = try NewFile.createMarkdown(in: directory)
+            NSWorkspace.shared.activateFileViewerSelecting([file])
+        } catch {
+            showError("无法新建 Markdown 文件", details: error.localizedDescription)
+        }
+    }
+
+    private func creationTarget(for menuKind: FIMenuKind) -> URL? {
+        let controller = FIFinderSyncController.default()
+        if menuKind == .contextualMenuForItems {
+            let selected = controller.selectedItemURLs() ?? []
+            return selected.count == 1 ? selected.first : nil
+        }
+        return controller.targetedURL()
     }
 
     @objc private func copyPath(_ sender: NSMenuItem) {

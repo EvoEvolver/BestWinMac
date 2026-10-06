@@ -14,6 +14,7 @@ swiftc -O "$root/app/BestWinMac.swift" "$root/app/FinderCutInterceptor.swift" \
     "$root/shared/FeatureSettings.swift" -o "$bundle/Contents/MacOS/BestWinMac" \
     -framework AppKit -framework ApplicationServices -framework Carbon -framework SwiftUI
 swiftc "$root/finder/src/FinderExt.swift" "$root/finder/src/DesktopAlias.swift" \
+    "$root/finder/src/NewFile.swift" \
     "$root/shared/FeatureSettings.swift" -o "$extension/Contents/MacOS/FinderExt" -target "$target" -parse-as-library \
     -framework Cocoa -framework FinderSync -Xlinker -e -Xlinker _NSExtensionMain
 

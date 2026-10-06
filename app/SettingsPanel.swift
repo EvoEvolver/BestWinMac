@@ -59,6 +59,8 @@ struct SettingsPanel: View {
                        binding: model.binding(for: \.copyPath))
             featureRow("发送到桌面快捷方式", symbol: "arrowshape.turn.up.right",
                        binding: model.binding(for: \.desktopAlias))
+            featureRow("新建 Markdown 文件", symbol: "doc.badge.plus",
+                       binding: model.binding(for: \.newMarkdown))
 
             if (model.settings.showDesktop || model.settings.finderCut) && !model.accessibilityGranted {
                 Button("开启辅助功能权限…", action: openAccessibilitySettings)
@@ -71,7 +73,7 @@ struct SettingsPanel: View {
             Spacer(minLength: 0)
         }
         .padding(24)
-        .frame(width: 420, height: 460)
+        .frame(width: 420, height: 520)
     }
 
     private func sectionTitle(_ title: String) -> some View {
