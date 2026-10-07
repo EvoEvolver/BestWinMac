@@ -10,6 +10,9 @@ private struct SavedWindow {
 final class DesktopController: NSObject, NSApplicationDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let finderCut = FinderCutInterceptor()
+    private lazy var hotCorner = HotCornerController { [weak self] in
+        self?.toggleDesktopFromHotCorner()
+    }
     private lazy var settingsModel = SettingsModel(settings: FeatureSettingsStore.load()) { [weak self] in
         self?.syncFeatures()
     }
@@ -32,7 +35,8 @@ final class DesktopController: NSObject, NSApplicationDelegate {
             }
             button.toolTip = "BestWinMac"
         }
-        if settingsModel.settings.showDesktop || settingsModel.settings.finderCut {
+        if settingsModel.settings.showDesktop || settingsModel.settings.showDesktopHotCorner
+            || settingsModel.settings.finderCut {
             let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
             _ = AXIsProcessTrustedWithOptions(options)
         }
@@ -58,12 +62,17 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         } else {
             finderCut.stop()
         }
+        if settings.showDesktopHotCorner && trusted {
+            hotCorner.start()
+        } else {
+            hotCorner.stop()
+        }
         if settings.showDesktop && trusted {
             registerHotKey()
         } else {
             unregisterHotKey()
-            if !settings.showDesktop && isDesktopShown { restoreWindows() }
         }
+        if !settings.showDesktop && !settings.showDesktopHotCorner && isDesktopShown { restoreWindows() }
         refreshMenu()
     }
 
@@ -75,7 +84,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         let handler: EventHandlerUPP = { _, _, context in
             guard let context else { return OSStatus(eventNotHandledErr) }
             let controller = Unmanaged<DesktopController>.fromOpaque(context).takeUnretainedValue()
-            controller.toggleDesktop()
+            controller.toggleDesktopFromShortcut()
             return noErr
         }
         let installStatus = InstallEventHandler(GetApplicationEventTarget(), handler, 1, &spec, context, &eventHandler)
@@ -107,7 +116,8 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         let settings = settingsModel.settings
         let trusted = AXIsProcessTrusted()
-        if settings.showDesktop && trusted {
+        let desktopFeatureEnabled = settings.showDesktop || settings.showDesktopHotCorner
+        if desktopFeatureEnabled && trusted {
             let title = isDesktopShown ? "Restore Windows" : "Show Desktop"
             let action = NSMenuItem(title: title, action: #selector(toggleFromMenu), keyEquivalent: "")
             action.target = self
@@ -120,7 +130,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         if settings.showDesktop && trusted && hotKey == nil {
             menu.addItem(NSMenuItem(title: "Command-D Shortcut Unavailable", action: nil, keyEquivalent: ""))
         }
-        if (settings.showDesktop || settings.finderCut) && !trusted {
+        if (desktopFeatureEnabled || settings.finderCut) && !trusted {
             let permission = NSMenuItem(title: "Grant Accessibility Access…", action: #selector(openAccessibilitySettings), keyEquivalent: "")
             permission.target = self
             menu.addItem(permission)
@@ -140,8 +150,18 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         toggleDesktop()
     }
 
+    private func toggleDesktopFromShortcut() {
+        guard settingsModel.settings.showDesktop else { return }
+        toggleDesktop()
+    }
+
+    private func toggleDesktopFromHotCorner() {
+        guard settingsModel.settings.showDesktopHotCorner else { return }
+        toggleDesktop()
+    }
+
     private func toggleDesktop() {
-        guard settingsModel.settings.showDesktop && AXIsProcessTrusted() else { return }
+        guard AXIsProcessTrusted() else { return }
         if isDesktopShown {
             restoreWindows()
         } else {
@@ -219,6 +239,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         if isDesktopShown { restoreWindows() }
         unregisterHotKey()
+        hotCorner.stop()
         finderCut.stop()
     }
 }

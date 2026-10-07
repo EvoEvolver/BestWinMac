@@ -18,6 +18,7 @@ enum FeatureSettingsTests {
         precondition(FeatureSettingsStore.load(from: file).openVSCode)
         precondition(FeatureSettingsStore.load(from: file).desktopAlias)
         precondition(FeatureSettingsStore.load(from: file).newMarkdown)
+        precondition(FeatureSettingsStore.load(from: file).showDesktopHotCorner)
 
         let previousVersion: [String: Bool] = [
             "showDesktop": false, "finderCut": true, "openVSCode": true,
@@ -29,6 +30,7 @@ enum FeatureSettingsTests {
         let migrated = FeatureSettingsStore.load(from: file)
         precondition(!migrated.showDesktop && !migrated.copyPath)
         precondition(migrated.newMarkdown)
+        precondition(migrated.showDesktopHotCorner)
         print("PASS: defaults, independent settings, and older settings migration")
     }
 }

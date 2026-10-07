@@ -10,7 +10,8 @@ launch_agent="$HOME/Library/LaunchAgents/local.zijian.BestWinMac.plist"
 mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources" "$extension/Contents/MacOS"
 
 swiftc -O "$root/app/BestWinMac.swift" "$root/app/FinderCutInterceptor.swift" \
-    "$root/app/CutPasteboardState.swift" "$root/app/SettingsPanel.swift" \
+    "$root/app/CutPasteboardState.swift" "$root/app/HotCornerController.swift" \
+    "$root/app/SettingsPanel.swift" \
     "$root/shared/FeatureSettings.swift" -o "$bundle/Contents/MacOS/BestWinMac" \
     -framework AppKit -framework ApplicationServices -framework Carbon -framework SwiftUI
 swiftc "$root/finder/src/FinderExt.swift" "$root/finder/src/DesktopAlias.swift" \

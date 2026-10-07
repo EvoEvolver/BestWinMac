@@ -7,6 +7,7 @@ Small Windows-style conveniences for macOS, packaged as one menu bar app with a 
 | Feature | Where | Behavior |
 | --- | --- | --- |
 | Show Desktop / Restore Windows | Global `⌘D` | Minimizes windows on the current desktop; clicking the desktop does not restore them |
+| Show Desktop hot corner | Bottom-right corner of the primary display | Toggles the same desktop state after a 300 ms dwell; leaving the corner does not restore windows |
 | Cut / move files | `⌘X` and `⌘V` in Finder | Uses Finder's native Copy and Move Item commands; other apps are unaffected |
 | Open with VS Code | Top-level Finder context menu for files, folders, and folder aliases | Opens the selected item in VS Code |
 | Copy Path | Top-level Finder context menu | Copies full paths, one per line for multiple items |
@@ -19,7 +20,7 @@ Small Windows-style conveniences for macOS, packaged as one menu bar app with a 
 ./install.sh
 ```
 
-The script builds and installs `/Applications/BestWinMac.app`, registers its Finder extension, and sets it to launch at login. Open **Settings...** from the BestWinMac menu bar icon to toggle each of the six features independently. Changes take effect immediately and persist across launches.
+The script builds and installs `/Applications/BestWinMac.app`, registers its Finder extension, and sets it to launch at login. Open **Settings...** from the BestWinMac menu bar icon to toggle each feature independently. Changes take effect immediately and persist across launches.
 
 The keyboard and window features need BestWinMac enabled in **System Settings > Privacy & Security > Accessibility**. The installer uses ad-hoc signing, so rebuilding the app can invalidate its previous approval. If `⌘D` or Finder cut stops working after an update, reset only this app's approval with `tccutil reset Accessibility local.zijian.BestWinMac`, then add `/Applications/BestWinMac.app` in Accessibility settings again.
 
@@ -41,6 +42,8 @@ swiftc finder/src/DesktopAlias.swift finder/tests/DesktopAliasTests.swift -o bui
 ./build/DesktopAliasTests --desktop
 swiftc app/CutPasteboardState.swift app/tests/CutPasteboardStateTests.swift -o build/CutPasteboardStateTests
 ./build/CutPasteboardStateTests
+swiftc app/HotCornerController.swift app/tests/HotCornerTriggerTests.swift -o build/HotCornerTriggerTests -framework AppKit
+./build/HotCornerTriggerTests
 swiftc shared/FeatureSettings.swift shared/tests/FeatureSettingsTests.swift -o build/FeatureSettingsTests
 ./build/FeatureSettingsTests
 swiftc finder/src/DesktopAlias.swift finder/src/NewFile.swift finder/tests/NewFileTests.swift -o build/NewFileTests

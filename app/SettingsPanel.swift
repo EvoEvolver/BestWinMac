@@ -45,9 +45,11 @@ struct SettingsPanel: View {
             }
             .padding(.bottom, 24)
 
-            sectionTitle("Keyboard Shortcuts")
+            sectionTitle("Shortcuts & Corners")
             featureRow("Show Desktop", detail: "⌘D", symbol: "rectangle.3.group",
                        binding: model.binding(for: \.showDesktop))
+            featureRow("Bottom-Right Hot Corner", detail: "300 ms", symbol: "arrow.down.right",
+                       binding: model.binding(for: \.showDesktopHotCorner))
             featureRow("Cut Files in Finder", detail: "⌘X / ⌘V", symbol: "scissors",
                        binding: model.binding(for: \.finderCut))
 
@@ -62,7 +64,8 @@ struct SettingsPanel: View {
             featureRow("New Markdown File", symbol: "doc.badge.plus",
                        binding: model.binding(for: \.newMarkdown))
 
-            if (model.settings.showDesktop || model.settings.finderCut) && !model.accessibilityGranted {
+            if (model.settings.showDesktop || model.settings.showDesktopHotCorner || model.settings.finderCut)
+                && !model.accessibilityGranted {
                 Button("Grant Accessibility Access…", action: openAccessibilitySettings)
                     .padding(.top, 16)
             }
@@ -73,7 +76,7 @@ struct SettingsPanel: View {
             Spacer(minLength: 0)
         }
         .padding(24)
-        .frame(width: 420, height: 520)
+        .frame(width: 420, height: 560)
     }
 
     private func sectionTitle(_ title: String) -> some View {

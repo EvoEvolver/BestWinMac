@@ -7,6 +7,7 @@
 | 功能 | 入口 | 行为 |
 | --- | --- | --- |
 | Show Desktop / Restore Windows | 全局 `⌘D` | 最小化当前桌面的窗口；点击桌面不会自动恢复 |
+| 显示桌面触发角 | 主显示器右下角 | 停留 300ms 后切换同一套显示桌面状态；离开角落不会恢复窗口 |
 | Finder 剪切 / 移动 | Finder 中的 `⌘X` 和 `⌘V` | 使用 Finder 原生的复制与移动命令，不影响其他 App |
 | Open with VS Code | 文件、文件夹和文件夹替身的顶层右键菜单 | 使用 VS Code 打开选中项 |
 | Copy Path | Finder 顶层右键菜单 | 复制完整路径，多选时每行一条 |
@@ -19,7 +20,7 @@
 ./install.sh
 ```
 
-脚本会构建并安装 `/Applications/BestWinMac.app`，注册 Finder 扩展及登录启动项。点击菜单栏中的 BestWinMac 图标，选择 **Settings...**，可以分别开关六项功能；设置立即生效，重启后仍会保留。
+脚本会构建并安装 `/Applications/BestWinMac.app`，注册 Finder 扩展及登录启动项。点击菜单栏中的 BestWinMac 图标，选择 **Settings...**，可以分别开关各项功能；设置立即生效，重启后仍会保留。
 
 键盘和窗口功能需要在 **系统设置 > 隐私与安全性 > 辅助功能** 中允许 BestWinMac。安装脚本使用临时签名，因此更新后旧授权可能失效。如果 `⌘D` 或 Finder 剪切停止工作，运行 `tccutil reset Accessibility local.zijian.BestWinMac`，再在辅助功能设置中重新添加 `/Applications/BestWinMac.app`。
 
