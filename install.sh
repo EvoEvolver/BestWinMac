@@ -14,6 +14,7 @@ swiftc -O "$root/app/BestWinMac.swift" "$root/app/FinderCutInterceptor.swift" \
     "$root/app/WindowSwitcherController.swift" \
     "$root/app/SettingsPanel.swift" \
     "$root/shared/FeatureSettings.swift" -o "$bundle/Contents/MacOS/BestWinMac" \
+    -F /System/Library/PrivateFrameworks -framework SkyLight \
     -framework AppKit -framework ApplicationServices -framework Carbon -framework SwiftUI
 swiftc "$root/finder/src/FinderExt.swift" "$root/finder/src/DesktopAlias.swift" \
     "$root/finder/src/NewFile.swift" \

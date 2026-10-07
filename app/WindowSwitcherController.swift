@@ -2,6 +2,17 @@ import AppKit
 import ApplicationServices
 import SwiftUI
 
+@_silgen_name("_AXUIElementGetWindow")
+private func getWindowID(_ element: AXUIElement, _ windowID: UnsafeMutablePointer<CGWindowID>) -> AXError
+
+@_silgen_name("GetProcessForPID")
+private func getProcessForPID(_ processIdentifier: pid_t,
+                              _ processSerialNumber: UnsafeMutablePointer<ProcessSerialNumber>) -> OSStatus
+
+@_silgen_name("_SLPSSetFrontProcessWithOptions")
+private func setFrontProcessWindow(_ processSerialNumber: UnsafeMutablePointer<ProcessSerialNumber>,
+                                   _ windowID: CGWindowID, _ mode: UInt32) -> CGError
+
 enum WindowSwitcherSelection {
     static func next(current: Int?, count: Int, backwards: Bool) -> Int? {
         guard count > 0 else { return nil }
@@ -18,6 +29,7 @@ private struct WindowSwitcherItem: Identifiable {
     let isMinimized: Bool
     let application: NSRunningApplication
     let element: AXUIElement
+    let windowID: CGWindowID
 }
 
 private final class WindowSwitcherModel: ObservableObject {
@@ -106,6 +118,7 @@ private struct WindowSwitcherOverlay: View {
 }
 
 final class WindowSwitcherController {
+    private static let userGeneratedFocusMode: UInt32 = 0x200
     private static let tabKeyCode: CGKeyCode = 48
     private static let escapeKeyCode: CGKeyCode = 53
     private static let leftKeyCode: CGKeyCode = 123
@@ -225,9 +238,19 @@ final class WindowSwitcherController {
         if item.isMinimized {
             _ = AXUIElementSetAttributeValue(item.element, kAXMinimizedAttribute as CFString, kCFBooleanFalse)
         }
-        item.application.activate()
+        var processSerialNumber = ProcessSerialNumber()
+        let processStatus = getProcessForPID(item.application.processIdentifier, &processSerialNumber)
+        let frontStatus = processStatus == noErr
+            ? setFrontProcessWindow(&processSerialNumber, item.windowID, Self.userGeneratedFocusMode)
+            : .failure
+        if frontStatus != .success {
+            NSLog("BestWinMac: window-level focus failed for window %u: %d",
+                  item.windowID, frontStatus.rawValue)
+            item.application.activate()
+        }
         let appElement = AXUIElementCreateApplication(item.application.processIdentifier)
         _ = AXUIElementSetAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, item.element)
+        _ = AXUIElementSetAttributeValue(item.element, kAXMainAttribute as CFString, kCFBooleanTrue)
         _ = AXUIElementPerformAction(item.element, kAXRaiseAction as CFString)
     }
 
@@ -287,6 +310,8 @@ final class WindowSwitcherController {
             return windows.compactMap { window in
                 guard axString(window, attribute: kAXRoleAttribute) == kAXWindowRole,
                       let size = axSize(window), size.width >= 80, size.height >= 50 else { return nil }
+                var windowID = CGWindowID.zero
+                guard getWindowID(window, &windowID) == .success, windowID != 0 else { return nil }
                 let title = axString(window, attribute: kAXTitleAttribute)
                 let minimized = axBool(window, attribute: kAXMinimizedAttribute) ?? false
                 return WindowSwitcherItem(
@@ -295,7 +320,8 @@ final class WindowSwitcherController {
                     icon: icon,
                     isMinimized: minimized,
                     application: application,
-                    element: window
+                    element: window,
+                    windowID: windowID
                 )
             }
         }

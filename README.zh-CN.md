@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | Show Desktop / Restore Windows | 全局 `⌘D` | 最小化当前桌面的窗口；用 `⌘Tab` 选中 App 时恢复该 App 的窗口，点击桌面则不会自动恢复 |
 | 显示桌面触发角 | 主显示器右下角 | 停留 300ms 后切换同一套显示桌面状态；离开角落不会恢复窗口 |
-| 窗口切换器 | 全局 `⌘Tab` / `⌘⇧Tab` | 用所有单独窗口（包括最小化窗口）的平铺界面替代 App 切换器；松开 `⌘` 打开选中窗口 |
+| 窗口切换器 | 全局 `⌘Tab` / `⌘⇧Tab` | 用所有单独窗口（包括最小化窗口）的平铺界面替代 App 切换器；松开 `⌘` 时只将选中窗口带到最前 |
 | Finder 剪切 / 移动 | Finder 中的 `⌘X` 和 `⌘V` | 使用 Finder 原生的复制与移动命令，不影响其他 App |
 | Open with VS Code | 文件、文件夹和文件夹替身的顶层右键菜单 | 使用 VS Code 打开选中项 |
 | Copy Path | Finder 顶层右键菜单 | 复制完整路径，多选时每行一条 |
@@ -24,6 +24,8 @@
 脚本会构建并安装 `/Applications/BestWinMac.app`，注册 Finder 扩展及登录启动项。点击菜单栏中的 BestWinMac 图标，选择 **Settings...**，可以分别开关各项功能；设置立即生效，重启后仍会保留。
 
 键盘和窗口功能需要在 **系统设置 > 隐私与安全性 > 辅助功能** 中允许 BestWinMac。安装脚本使用临时签名，因此更新后旧授权可能失效。如果 `⌘D` 或 Finder 剪切停止工作，运行 `tccutil reset Accessibility local.zijian.BestWinMac`，再在辅助功能设置中重新添加 `/Applications/BestWinMac.app`。
+
+窗口级前置使用 macOS 的私有 SkyLight framework，因为公开激活 API 的操作对象是整个 App，而不是跨 App 的单个窗口。这个方案适合本地安装的小工具，但 macOS 大版本更新后需要重新测试。
 
 Finder 剪切的快捷键转换思路参考采用 MIT 许可证的 [YONN2222/cmdX](https://github.com/YONN2222/cmdX)，许可证见 `third_party/cmdX-LICENSE`。RightOpen 的来源和 MIT 许可证见 `finder/LICENSE`。
 
