@@ -4,6 +4,7 @@ import Carbon
 import SwiftUI
 
 private struct SavedWindow {
+    let processIdentifier: pid_t
     let element: AXUIElement
 }
 
@@ -24,6 +25,12 @@ final class DesktopController: NSObject, NSApplicationDelegate {
     private var eventHandler: EventHandlerRef?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(applicationActivated(_:)),
+            name: NSWorkspace.didActivateApplicationNotification,
+            object: nil
+        )
         if let button = statusItem.button {
             if let path = Bundle.main.path(forResource: "BestWinMacMenuBar", ofType: "png"),
                let image = NSImage(contentsOfFile: path) {
@@ -193,11 +200,29 @@ final class DesktopController: NSObject, NSApplicationDelegate {
                 guard AXUIElementCopyAttributeValue(window, kAXMinimizedAttribute as CFString, &rawMinimized) == .success,
                       let minimized = rawMinimized as? Bool, !minimized else { continue }
                 if AXUIElementSetAttributeValue(window, kAXMinimizedAttribute as CFString, kCFBooleanTrue) == .success {
-                    savedWindows.append(SavedWindow(element: window))
+                    savedWindows.append(SavedWindow(processIdentifier: pid, element: window))
                 }
             }
         }
         isDesktopShown = !savedWindows.isEmpty
+    }
+
+    @objc private func applicationActivated(_ notification: Notification) {
+        guard isDesktopShown,
+              let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey]
+                as? NSRunningApplication else { return }
+
+        let processIdentifier = application.processIdentifier
+        let windowsToRestore = savedWindows.filter { $0.processIdentifier == processIdentifier }
+        guard !windowsToRestore.isEmpty else { return }
+
+        for saved in windowsToRestore.reversed() {
+            _ = AXUIElementSetAttributeValue(saved.element, kAXMinimizedAttribute as CFString, kCFBooleanFalse)
+        }
+        savedWindows.removeAll { $0.processIdentifier == processIdentifier }
+        isDesktopShown = !savedWindows.isEmpty
+        if !isDesktopShown { previousFrontmost = nil }
+        refreshMenu()
     }
 
     private func restoreWindows() {
@@ -238,6 +263,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         if isDesktopShown { restoreWindows() }
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
         unregisterHotKey()
         hotCorner.stop()
         finderCut.stop()

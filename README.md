@@ -6,7 +6,7 @@ Small Windows-style conveniences for macOS, packaged as one menu bar app with a 
 
 | Feature | Where | Behavior |
 | --- | --- | --- |
-| Show Desktop / Restore Windows | Global `⌘D` | Minimizes windows on the current desktop; clicking the desktop does not restore them |
+| Show Desktop / Restore Windows | Global `⌘D` | Minimizes windows on the current desktop; selecting an app with `⌘Tab` restores that app's windows, while clicking the desktop does not restore them |
 | Show Desktop hot corner | Bottom-right corner of the primary display | Toggles the same desktop state after a 300 ms dwell; leaving the corner does not restore windows |
 | Cut / move files | `⌘X` and `⌘V` in Finder | Uses Finder's native Copy and Move Item commands; other apps are unaffected |
 | Open with VS Code | Top-level Finder context menu for files, folders, and folder aliases | Opens the selected item in VS Code |
