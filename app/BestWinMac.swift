@@ -11,6 +11,7 @@ private struct SavedWindow {
 final class DesktopController: NSObject, NSApplicationDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let finderCut = FinderCutInterceptor()
+    private let windowSwitcher = WindowSwitcherController()
     private lazy var hotCorner = HotCornerController { [weak self] in
         self?.toggleDesktopFromHotCorner()
     }
@@ -43,6 +44,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
             button.toolTip = "BestWinMac"
         }
         if settingsModel.settings.showDesktop || settingsModel.settings.showDesktopHotCorner
+            || settingsModel.settings.windowSwitcher
             || settingsModel.settings.finderCut {
             let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
             _ = AXIsProcessTrustedWithOptions(options)
@@ -68,6 +70,11 @@ final class DesktopController: NSObject, NSApplicationDelegate {
             finderCut.start()
         } else {
             finderCut.stop()
+        }
+        if settings.windowSwitcher && trusted {
+            windowSwitcher.start()
+        } else {
+            windowSwitcher.stop()
         }
         if settings.showDesktopHotCorner && trusted {
             hotCorner.start()
@@ -137,7 +144,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         if settings.showDesktop && trusted && hotKey == nil {
             menu.addItem(NSMenuItem(title: "Command-D Shortcut Unavailable", action: nil, keyEquivalent: ""))
         }
-        if (desktopFeatureEnabled || settings.finderCut) && !trusted {
+        if (desktopFeatureEnabled || settings.windowSwitcher || settings.finderCut) && !trusted {
             let permission = NSMenuItem(title: "Grant Accessibility Access…", action: #selector(openAccessibilitySettings), keyEquivalent: "")
             permission.target = self
             menu.addItem(permission)
@@ -265,6 +272,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
         if isDesktopShown { restoreWindows() }
         NSWorkspace.shared.notificationCenter.removeObserver(self)
         unregisterHotKey()
+        windowSwitcher.stop()
         hotCorner.stop()
         finderCut.stop()
     }

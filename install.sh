@@ -11,6 +11,7 @@ mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources" "$extension/Conte
 
 swiftc -O "$root/app/BestWinMac.swift" "$root/app/FinderCutInterceptor.swift" \
     "$root/app/CutPasteboardState.swift" "$root/app/HotCornerController.swift" \
+    "$root/app/WindowSwitcherController.swift" \
     "$root/app/SettingsPanel.swift" \
     "$root/shared/FeatureSettings.swift" -o "$bundle/Contents/MacOS/BestWinMac" \
     -framework AppKit -framework ApplicationServices -framework Carbon -framework SwiftUI

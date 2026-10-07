@@ -50,6 +50,8 @@ struct SettingsPanel: View {
                        binding: model.binding(for: \.showDesktop))
             featureRow("Bottom-Right Hot Corner", detail: "300 ms", symbol: "arrow.down.right",
                        binding: model.binding(for: \.showDesktopHotCorner))
+            featureRow("Window Switcher", detail: "⌘Tab", symbol: "rectangle.grid.2x2",
+                       binding: model.binding(for: \.windowSwitcher))
             featureRow("Cut Files in Finder", detail: "⌘X / ⌘V", symbol: "scissors",
                        binding: model.binding(for: \.finderCut))
 
@@ -64,7 +66,8 @@ struct SettingsPanel: View {
             featureRow("New Markdown File", symbol: "doc.badge.plus",
                        binding: model.binding(for: \.newMarkdown))
 
-            if (model.settings.showDesktop || model.settings.showDesktopHotCorner || model.settings.finderCut)
+            if (model.settings.showDesktop || model.settings.showDesktopHotCorner || model.settings.windowSwitcher
+                || model.settings.finderCut)
                 && !model.accessibilityGranted {
                 Button("Grant Accessibility Access…", action: openAccessibilitySettings)
                     .padding(.top, 16)

@@ -4,6 +4,7 @@ import Darwin
 struct FeatureSettings: Codable, Equatable {
     var showDesktop = true
     var showDesktopHotCorner = true
+    var windowSwitcher = true
     var finderCut = true
     var openVSCode = true
     var copyPath = true
@@ -13,13 +14,14 @@ struct FeatureSettings: Codable, Equatable {
     init() {}
 
     private enum CodingKeys: String, CodingKey {
-        case showDesktop, showDesktopHotCorner, finderCut, openVSCode, copyPath, desktopAlias, newMarkdown
+        case showDesktop, showDesktopHotCorner, windowSwitcher, finderCut, openVSCode, copyPath, desktopAlias, newMarkdown
     }
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         showDesktop = try values.decodeIfPresent(Bool.self, forKey: .showDesktop) ?? true
         showDesktopHotCorner = try values.decodeIfPresent(Bool.self, forKey: .showDesktopHotCorner) ?? true
+        windowSwitcher = try values.decodeIfPresent(Bool.self, forKey: .windowSwitcher) ?? true
         finderCut = try values.decodeIfPresent(Bool.self, forKey: .finderCut) ?? true
         openVSCode = try values.decodeIfPresent(Bool.self, forKey: .openVSCode) ?? true
         copyPath = try values.decodeIfPresent(Bool.self, forKey: .copyPath) ?? true
