@@ -5,13 +5,16 @@ import SwiftUI
 
 private struct SavedWindow {
     let processIdentifier: pid_t
+    let windowID: CGWindowID?
     let element: AXUIElement
 }
 
 final class DesktopController: NSObject, NSApplicationDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let finderCut = FinderCutInterceptor()
-    private let windowSwitcher = WindowSwitcherController()
+    private lazy var windowSwitcher = WindowSwitcherController { [weak self] processIdentifier, windowID in
+        self?.prepareForWindowFocus(processIdentifier: processIdentifier, windowID: windowID)
+    }
     private lazy var hotCorner = HotCornerController { [weak self] in
         self?.toggleDesktopFromHotCorner()
     }
@@ -21,6 +24,7 @@ final class DesktopController: NSObject, NSApplicationDelegate {
     private var settingsWindow: NSWindow?
     private var savedWindows: [SavedWindow] = []
     private var previousFrontmost: NSRunningApplication?
+    private var ignoredActivation: (processIdentifier: pid_t, token: UUID)?
     private var isDesktopShown = false
     private var hotKey: EventHotKeyRef?
     private var eventHandler: EventHandlerRef?
@@ -207,7 +211,9 @@ final class DesktopController: NSObject, NSApplicationDelegate {
                 guard AXUIElementCopyAttributeValue(window, kAXMinimizedAttribute as CFString, &rawMinimized) == .success,
                       let minimized = rawMinimized as? Bool, !minimized else { continue }
                 if AXUIElementSetAttributeValue(window, kAXMinimizedAttribute as CFString, kCFBooleanTrue) == .success {
-                    savedWindows.append(SavedWindow(processIdentifier: pid, element: window))
+                    savedWindows.append(SavedWindow(processIdentifier: pid,
+                                                    windowID: windowID(for: window),
+                                                    element: window))
                 }
             }
         }
@@ -220,6 +226,10 @@ final class DesktopController: NSObject, NSApplicationDelegate {
                 as? NSRunningApplication else { return }
 
         let processIdentifier = application.processIdentifier
+        if ignoredActivation?.processIdentifier == processIdentifier {
+            ignoredActivation = nil
+            return
+        }
         let windowsToRestore = savedWindows.filter { $0.processIdentifier == processIdentifier }
         guard !windowsToRestore.isEmpty else { return }
 
@@ -227,6 +237,26 @@ final class DesktopController: NSObject, NSApplicationDelegate {
             _ = AXUIElementSetAttributeValue(saved.element, kAXMinimizedAttribute as CFString, kCFBooleanFalse)
         }
         savedWindows.removeAll { $0.processIdentifier == processIdentifier }
+        isDesktopShown = !savedWindows.isEmpty
+        if !isDesktopShown { previousFrontmost = nil }
+        refreshMenu()
+    }
+
+    private func prepareForWindowFocus(processIdentifier: pid_t, windowID: CGWindowID) {
+        guard isDesktopShown else { return }
+
+        let token = UUID()
+        ignoredActivation = (processIdentifier, token)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            guard self?.ignoredActivation?.token == token else { return }
+            self?.ignoredActivation = nil
+        }
+
+        let windowsToRestore = savedWindows.filter { $0.windowID == windowID }
+        for saved in windowsToRestore {
+            _ = AXUIElementSetAttributeValue(saved.element, kAXMinimizedAttribute as CFString, kCFBooleanFalse)
+        }
+        savedWindows.removeAll { $0.windowID == windowID }
         isDesktopShown = !savedWindows.isEmpty
         if !isDesktopShown { previousFrontmost = nil }
         refreshMenu()

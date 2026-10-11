@@ -3,7 +3,7 @@ import ApplicationServices
 import SwiftUI
 
 @_silgen_name("_AXUIElementGetWindow")
-private func getWindowID(_ element: AXUIElement, _ windowID: UnsafeMutablePointer<CGWindowID>) -> AXError
+private func copyWindowID(_ element: AXUIElement, _ windowID: UnsafeMutablePointer<CGWindowID>) -> AXError
 
 @_silgen_name("GetProcessForPID")
 private func getProcessForPID(_ processIdentifier: pid_t,
@@ -12,6 +12,29 @@ private func getProcessForPID(_ processIdentifier: pid_t,
 @_silgen_name("_SLPSSetFrontProcessWithOptions")
 private func setFrontProcessWindow(_ processSerialNumber: UnsafeMutablePointer<ProcessSerialNumber>,
                                    _ windowID: CGWindowID, _ mode: UInt32) -> CGError
+
+@_silgen_name("SLPSPostEventRecordTo")
+private func postEventRecord(_ processSerialNumber: UnsafeMutablePointer<ProcessSerialNumber>,
+                             _ bytes: UnsafeMutablePointer<UInt8>) -> CGError
+
+enum WindowFocusEvent {
+    static func makeKey(windowID: CGWindowID) -> [UInt8] {
+        var windowID = windowID
+        var point = CGPoint(x: 300_000, y: 300_000)
+        var bytes = [UInt8](repeating: 0, count: 0x100)
+        bytes[0x04] = 0xf8
+        bytes[0x08] = UInt8(CGEventType.leftMouseDown.rawValue)
+        bytes[0x3a] = 0x10
+        withUnsafeBytes(of: &windowID) { bytes.replaceSubrange(0x3c..<0x40, with: $0) }
+        withUnsafeBytes(of: &point) { bytes.replaceSubrange(0x20..<0x30, with: $0) }
+        return bytes
+    }
+}
+
+func windowID(for element: AXUIElement) -> CGWindowID? {
+    var windowID = CGWindowID.zero
+    return copyWindowID(element, &windowID) == .success && windowID != 0 ? windowID : nil
+}
 
 enum WindowSwitcherSelection {
     static func next(current: Int?, count: Int, backwards: Bool) -> Int? {
@@ -127,12 +150,17 @@ final class WindowSwitcherController {
     private static let upKeyCode: CGKeyCode = 126
 
     private let model = WindowSwitcherModel()
+    private let willFocusWindow: (pid_t, CGWindowID) -> Void
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var isVisible = false
     private lazy var panel: NSPanel = makePanel()
 
     var isRunning: Bool { eventTap != nil }
+
+    init(willFocusWindow: @escaping (pid_t, CGWindowID) -> Void = { _, _ in }) {
+        self.willFocusWindow = willFocusWindow
+    }
 
     func start() {
         guard eventTap == nil else { return }
@@ -235,6 +263,7 @@ final class WindowSwitcherController {
         }
         let item = model.items[index]
         dismiss()
+        willFocusWindow(item.application.processIdentifier, item.windowID)
         if item.isMinimized {
             _ = AXUIElementSetAttributeValue(item.element, kAXMinimizedAttribute as CFString, kCFBooleanFalse)
         }
@@ -247,10 +276,16 @@ final class WindowSwitcherController {
             NSLog("BestWinMac: window-level focus failed for window %u: %d",
                   item.windowID, frontStatus.rawValue)
             item.application.activate()
+        } else {
+            var eventRecord = WindowFocusEvent.makeKey(windowID: item.windowID)
+            let keyStatus = eventRecord.withUnsafeMutableBufferPointer { buffer in
+                postEventRecord(&processSerialNumber, buffer.baseAddress!)
+            }
+            if keyStatus != .success {
+                NSLog("BestWinMac: could not make window %u key: %d",
+                      item.windowID, keyStatus.rawValue)
+            }
         }
-        let appElement = AXUIElementCreateApplication(item.application.processIdentifier)
-        _ = AXUIElementSetAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, item.element)
-        _ = AXUIElementSetAttributeValue(item.element, kAXMainAttribute as CFString, kCFBooleanTrue)
         _ = AXUIElementPerformAction(item.element, kAXRaiseAction as CFString)
     }
 
@@ -310,8 +345,7 @@ final class WindowSwitcherController {
             return windows.compactMap { window in
                 guard axString(window, attribute: kAXRoleAttribute) == kAXWindowRole,
                       let size = axSize(window), size.width >= 80, size.height >= 50 else { return nil }
-                var windowID = CGWindowID.zero
-                guard getWindowID(window, &windowID) == .success, windowID != 0 else { return nil }
+                guard let windowID = windowID(for: window) else { return nil }
                 let title = axString(window, attribute: kAXTitleAttribute)
                 let minimized = axBool(window, attribute: kAXMinimizedAttribute) ?? false
                 return WindowSwitcherItem(

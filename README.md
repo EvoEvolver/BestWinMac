@@ -28,6 +28,7 @@ The keyboard and window features need BestWinMac enabled in **System Settings > 
 Window-level focusing uses macOS's private SkyLight framework because the public activation API raises an application rather than one cross-application window. This is suitable for a locally installed utility, but the behavior should be retested after major macOS updates.
 
 Finder cut follows the shortcut-conversion approach of the MIT-licensed [YONN2222/cmdX](https://github.com/YONN2222/cmdX); see `third_party/cmdX-LICENSE`. RightOpen's origin and MIT license are recorded in `finder/LICENSE`.
+The targeted key-window event follows the MIT-licensed [asmvik/yabai](https://github.com/asmvik/yabai) technique; see `third_party/yabai-LICENSE`.
 
 ## Layout
 

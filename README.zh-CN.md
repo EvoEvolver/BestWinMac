@@ -28,6 +28,7 @@
 窗口级前置使用 macOS 的私有 SkyLight framework，因为公开激活 API 的操作对象是整个 App，而不是跨 App 的单个窗口。这个方案适合本地安装的小工具，但 macOS 大版本更新后需要重新测试。
 
 Finder 剪切的快捷键转换思路参考采用 MIT 许可证的 [YONN2222/cmdX](https://github.com/YONN2222/cmdX)，许可证见 `third_party/cmdX-LICENSE`。RightOpen 的来源和 MIT 许可证见 `finder/LICENSE`。
+定向 key-window 事件采用 MIT 许可证的 [asmvik/yabai](https://github.com/asmvik/yabai) 实现思路，许可证见 `third_party/yabai-LICENSE`。
 
 ## 目录
 
