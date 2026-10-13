@@ -7,6 +7,7 @@ struct FeatureSettings: Codable, Equatable {
     var windowSwitcher = true
     var finderCut = true
     var openVSCode = true
+    var openTerminal = true
     var copyPath = true
     var desktopAlias = true
     var newMarkdown = true
@@ -14,7 +15,8 @@ struct FeatureSettings: Codable, Equatable {
     init() {}
 
     private enum CodingKeys: String, CodingKey {
-        case showDesktop, showDesktopHotCorner, windowSwitcher, finderCut, openVSCode, copyPath, desktopAlias, newMarkdown
+        case showDesktop, showDesktopHotCorner, windowSwitcher, finderCut, openVSCode, openTerminal
+        case copyPath, desktopAlias, newMarkdown
     }
 
     init(from decoder: Decoder) throws {
@@ -24,6 +26,7 @@ struct FeatureSettings: Codable, Equatable {
         windowSwitcher = try values.decodeIfPresent(Bool.self, forKey: .windowSwitcher) ?? true
         finderCut = try values.decodeIfPresent(Bool.self, forKey: .finderCut) ?? true
         openVSCode = try values.decodeIfPresent(Bool.self, forKey: .openVSCode) ?? true
+        openTerminal = try values.decodeIfPresent(Bool.self, forKey: .openTerminal) ?? true
         copyPath = try values.decodeIfPresent(Bool.self, forKey: .copyPath) ?? true
         desktopAlias = try values.decodeIfPresent(Bool.self, forKey: .desktopAlias) ?? true
         newMarkdown = try values.decodeIfPresent(Bool.self, forKey: .newMarkdown) ?? true

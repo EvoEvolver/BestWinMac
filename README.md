@@ -11,6 +11,7 @@ Small Windows-style conveniences for macOS, packaged as one menu bar app with a 
 | Window Switcher | Global `⌘Tab` / `⌘⇧Tab` | Replaces the app switcher with a tiled view of individual windows, including minimized windows; release `⌘` to bring only the selected window forward |
 | Cut / move files | `⌘X` and `⌘V` in Finder | Uses Finder's native Copy and Move Item commands; other apps are unaffected |
 | Open with VS Code | Top-level Finder context menu for files, folders, and folder aliases | Opens the selected item in VS Code |
+| Open in Terminal | Top-level Finder context menu for files, folders, and folder aliases | Opens a folder in Terminal; for a file, opens its containing folder |
 | Copy Path | Top-level Finder context menu | Copies full paths, one per line for multiple items |
 | Create Desktop Shortcut | Top-level Finder context menu | Creates a macOS alias without moving the source |
 | New Markdown File | Top-level Finder context menu | Creates an empty `.md` file inside a folder, beside a file, or in the current folder; numbers duplicate names |
@@ -54,4 +55,6 @@ swiftc shared/FeatureSettings.swift shared/tests/FeatureSettingsTests.swift -o b
 ./build/FeatureSettingsTests
 swiftc finder/src/DesktopAlias.swift finder/src/NewFile.swift finder/tests/NewFileTests.swift -o build/NewFileTests
 ./build/NewFileTests
+swiftc finder/src/OpenTarget.swift finder/tests/OpenTargetTests.swift -o build/OpenTargetTests
+./build/OpenTargetTests
 ```

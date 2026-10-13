@@ -7,6 +7,7 @@ private struct TargetApp {
     let appPath: String
     /// When true, open a selected file's containing folder instead.
     let folderOnly: Bool
+    let isEnabled: (FeatureSettings) -> Bool
 }
 
 @objc(FinderExt)
@@ -17,7 +18,12 @@ class FinderExt: FIFinderSync {
     private let apps: [TargetApp] = [
         TargetApp(title: "Open with VS Code",
                   appPath: "/Applications/Visual Studio Code.app",
-                  folderOnly: false),
+                  folderOnly: false,
+                  isEnabled: { $0.openVSCode }),
+        TargetApp(title: "Open in Terminal",
+                  appPath: "/System/Applications/Utilities/Terminal.app",
+                  folderOnly: true,
+                  isEnabled: { $0.openTerminal }),
     ]
 
     override init() {
@@ -29,14 +35,13 @@ class FinderExt: FIFinderSync {
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
         let menu = NSMenu(title: "")
         let settings = FeatureSettingsStore.load()
-        if settings.openVSCode {
-            for (index, app) in apps.enumerated() where FileManager.default.fileExists(atPath: app.appPath) {
-                let item = menu.addItem(withTitle: app.title,
-                                        action: #selector(open(_:)),
-                                        keyEquivalent: "")
-                item.tag = index
-                item.image = icon(for: app.appPath)
-            }
+        for (index, app) in apps.enumerated()
+            where app.isEnabled(settings) && FileManager.default.fileExists(atPath: app.appPath) {
+            let item = menu.addItem(withTitle: app.title,
+                                    action: #selector(open(_:)),
+                                    keyEquivalent: "")
+            item.tag = index
+            item.image = icon(for: app.appPath)
         }
         if menuKind == .contextualMenuForItems || menuKind == .contextualMenuForContainer || menuKind == .contextualMenuForSidebar {
             let urls = targets()
@@ -161,7 +166,7 @@ class FinderExt: FIFinderSync {
         for selected in targets() {
             do {
                 let target = try DesktopAlias.targetForOpening(selected)
-                urls.append(app.folderOnly ? enclosingDirectory(of: target) : target)
+                urls.append(OpenTarget.resolve(target, folderOnly: app.folderOnly))
             } catch {
                 failures.append("\(selected.lastPathComponent): \(error.localizedDescription)")
             }
@@ -186,12 +191,6 @@ class FinderExt: FIFinderSync {
             return [current]
         }
         return []
-    }
-
-    private func enclosingDirectory(of url: URL) -> URL {
-        var isDirectory: ObjCBool = false
-        FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
-        return isDirectory.boolValue ? url : url.deletingLastPathComponent()
     }
 
     /// Use the target app's own icon so no separate icon asset is needed.

@@ -16,6 +16,7 @@ enum FeatureSettingsTests {
         precondition(FeatureSettingsStore.load(from: file) == settings)
         precondition(FeatureSettingsStore.load(from: file).finderCut)
         precondition(FeatureSettingsStore.load(from: file).openVSCode)
+        precondition(FeatureSettingsStore.load(from: file).openTerminal)
         precondition(FeatureSettingsStore.load(from: file).desktopAlias)
         precondition(FeatureSettingsStore.load(from: file).newMarkdown)
         precondition(FeatureSettingsStore.load(from: file).showDesktopHotCorner)
@@ -33,6 +34,7 @@ enum FeatureSettingsTests {
         precondition(migrated.newMarkdown)
         precondition(migrated.showDesktopHotCorner)
         precondition(migrated.windowSwitcher)
+        precondition(migrated.openTerminal)
         print("PASS: defaults, independent settings, and older settings migration")
     }
 }

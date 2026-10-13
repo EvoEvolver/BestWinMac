@@ -11,6 +11,7 @@
 | 窗口切换器 | 全局 `⌘Tab` / `⌘⇧Tab` | 用所有单独窗口（包括最小化窗口）的平铺界面替代 App 切换器；松开 `⌘` 时只将选中窗口带到最前 |
 | Finder 剪切 / 移动 | Finder 中的 `⌘X` 和 `⌘V` | 使用 Finder 原生的复制与移动命令，不影响其他 App |
 | Open with VS Code | 文件、文件夹和文件夹替身的顶层右键菜单 | 使用 VS Code 打开选中项 |
+| Open in Terminal | 文件、文件夹和文件夹替身的顶层右键菜单 | 在 Terminal 中打开文件夹；选中文件时打开其所在文件夹 |
 | Copy Path | Finder 顶层右键菜单 | 复制完整路径，多选时每行一条 |
 | Create Desktop Shortcut | Finder 顶层右键菜单 | 创建 macOS 替身，不移动源文件 |
 | New Markdown File | Finder 顶层右键菜单 | 在文件夹内、文件同级或当前文件夹新建空白 `.md` 文件；重名时自动编号 |

@@ -59,6 +59,8 @@ struct SettingsPanel: View {
                 .padding(.top, 18)
             featureRow("Open with VS Code", symbol: "chevron.left.forwardslash.chevron.right",
                        binding: model.binding(for: \.openVSCode))
+            featureRow("Open in Terminal", symbol: "terminal",
+                       binding: model.binding(for: \.openTerminal))
             featureRow("Copy Path", symbol: "doc.on.doc",
                        binding: model.binding(for: \.copyPath))
             featureRow("Create Desktop Shortcut", symbol: "arrowshape.turn.up.right",
@@ -79,7 +81,7 @@ struct SettingsPanel: View {
             Spacer(minLength: 0)
         }
         .padding(24)
-        .frame(width: 420, height: 560)
+        .frame(width: 420, height: 610)
     }
 
     private func sectionTitle(_ title: String) -> some View {
